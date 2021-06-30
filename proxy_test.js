@@ -2,16 +2,50 @@
 
 // let util = require('util');
 
+function trapFunction(obj) {
+  return new Proxy(obj, {
+    apply: function(target, thisArg, ...argArrary) {
+      Reflect.apply(target, thisArg, ...argArrary);
+      console.log("function apply", thisArg);
+    }
+  })
+}
 
-// function trapArray(obj, path) {
-//     path = path || [];
-//     let proxy = new Proxy(obj, {
-//         get: function(target, property, value, receiver) {
-            
-//         }
-//     });
-//     return proxy;
-// }
+
+const ArrayModifyInterface = new Set([
+  'push', 'fill', 'pop', 'reverse', 'shift', 'splice', 'unshift'
+])
+
+function trapArray(obj, path) {
+    path = path || [];
+    let proxy = new Proxy(obj, {
+        get: function(target, property, receiver) {
+          let temp = Reflect.get(target, property, receiver);
+          if (typeof temp === 'function') {
+            return trapFunction(temp);
+          }
+          return temp;
+        }
+
+    });
+    return proxy;
+}
+
+
+function trapArrayClass(cls) {
+  return new Proxy(cls, {
+    construct: function(target, ...argArray) {
+      console.log("overwrite Array");
+      return Reflect.construct(target, ...argArray);
+    }
+  })
+}
+
+globalThis.Array = trapArrayClass(Array);
+
+a = new Array();
+a.push(1,2,3);
+console.log(a);
 
 
 // function trapObject(obj, path) {
@@ -149,20 +183,20 @@
 // TODO: 尝试构造代理类， 由代理类构造代理对象
 
 
-function monster1(disposition) {
-    this.disposition = disposition;
-  }
+// function monster1(disposition) {
+//     this.disposition = disposition;
+//   }
   
-  const handler1 = {
-    construct(target, args) {
-      console.log('monster1 constructor called');
-      // expected output: "monster1 constructor called"
+//   const handler1 = {
+//     construct(target, args) {
+//       console.log('monster1 constructor called');
+//       // expected output: "monster1 constructor called"
   
-      return new target(...args);
-    }
-  };
+//       return new target(...args);
+//     }
+//   };
   
-  const proxy1 = new Proxy(monster1, handler1);
+//   const proxy1 = new Proxy(monster1, handler1);
   
-  console.log(new proxy1('fierce').disposition);
+//   console.log(new proxy1('fierce').disposition);
   // expected output: "fierce"
