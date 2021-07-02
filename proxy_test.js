@@ -37,6 +37,9 @@ function trapFunction(obj) {
 //   return proxy;
 // }
 
+const ArrayModifyInterface = new Set([
+  'push', 'fill', 'pop', 'reverse', 'shift', 'splice', 'unshift'
+])
 
 function trapArray(obj, cb) {
   let proxy = new Proxy(obj, {
